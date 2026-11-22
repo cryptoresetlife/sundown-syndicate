@@ -1,16 +1,13 @@
 // The story of Sundown Syndicate: eight chapters in which Dez Calloway comes home to Marisol Bay,
 // crosses the Coral Kings, and takes the city back from the developer Sterling Vance.
+import './activities.js'; // load order: the story chapters, then the side jobs, then the engine that runs both
 import { game } from '../core/state.js';
-import { BLOCK, CITY, LANDMARKS, PIER } from '../world/layout.js';
+import { BLOCK, CITY, LANDMARKS as L, PIER } from '../world/layout.js';
 import { LaneDriver, RouteDriver, ChaseDriver, steerToward } from '../vehicles/driver.js';
 import { setWantedLevel, wanted } from '../police/wanted.js';
 import { alertGang } from '../combat/gangs.js';
-import { mission, registerStory, goTo, getIn, eliminate, wreck, pickUp, loseCops, talk, custom, race } from './missions.js';
-
-const L = LANDMARKS;
-const street = (id) => ({ x: L[id].streetX, z: L[id].streetZ });
-const spot = (id) => ({ x: L[id].x, z: L[id].z });
-const node = (i, j) => ({ x: i * BLOCK, z: j * BLOCK });
+import { mission, registerStory } from './missions.js';
+import { goTo, getIn, eliminate, wreck, pickUp, loseCops, talk, custom, race } from './objectives.js';
 
 // 1. A delivery run against the clock in Mama Lupe's taco van: the tutorial for driving.
 const welcomeBack = {
@@ -313,3 +310,10 @@ const sundown = {
 
 export const STORY = [welcomeBack, borrowedTime, tailLights, reefCleanup, bagman, neonRun, paperTigers, sundown];
 registerStory(STORY);
+
+/** Where a car pulls up outside a landmark. */
+function street(id) { return { x: L[id].streetX, z: L[id].streetZ }; }
+/** The marker spot on a landmark's forecourt. */
+function spot(id) { return { x: L[id].x, z: L[id].z }; }
+/** The centre of intersection (i, j). */
+function node(i, j) { return { x: i * BLOCK, z: j * BLOCK }; }

@@ -1,5 +1,6 @@
 // Pedestrians: the people of Marisol Bay. They stroll the sidewalks block by block, cross at
 // corners, stop to idle, sunbathe on the beach, and panic, cower, flee or fight back when trouble starts.
+import '../police/wanted.js'; // load order: witnesses, then the law they call
 import { game, onEvent } from '../core/state.js';
 import { rand, headingTo } from '../core/mathutil.js';
 import { pointInBuilding } from '../core/collision.js';
@@ -8,14 +9,6 @@ import { GRID, BLOCK, ROAD_HALF, CITY, ISLAND, districtOfBlock } from '../world/
 import { sun } from '../world/sky.js';
 import { Npc } from './npc.js';
 import { randomLook } from './humanoid.js';
-
-const WALK_SPEED = 1.5, FLEE_SPEED = 6.2;
-let spawnClock = 0;
-
-function cornerOf(bx, bz, k) {
-  const a = ROAD_HALF + 1.6, b = BLOCK - ROAD_HALF - 1.6;
-  return { x: bx * BLOCK + (k === 1 || k === 2 ? b : a), z: bz * BLOCK + (k >= 2 ? b : a) };
-}
 
 /** Creates one civilian at (x, z). opts: { look, brave, armed, beach, bx, bz, corner } */
 export function spawnPedestrian(x, z, opts = {}) {
@@ -40,6 +33,15 @@ export function scarePedestrian(npc, x, z, attacker = null, seconds = 9) {
   if (m.state === 'fight') return;
   m.state = rand.chance(0.18) && !attacker ? 'cower' : 'flee';
   m.timer = seconds * rand.range(0.7, 1.3);
+}
+
+const WALK_SPEED = 1.5, FLEE_SPEED = 6.2;
+let spawnClock = 0;
+
+/** The four sidewalk corners of block (bx, bz): 0 NW, 1 NE, 2 SE, 3 SW. */
+function cornerOf(bx, bz, k) {
+  const a = ROAD_HALF + 1.6, b = BLOCK - ROAD_HALF - 1.6;
+  return { x: bx * BLOCK + (k === 1 || k === 2 ? b : a), z: bz * BLOCK + (k >= 2 ? b : a) };
 }
 
 function civilianBrain(npc, dt) {

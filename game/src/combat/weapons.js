@@ -1,5 +1,6 @@
 // Weapons and ballistics: the arsenal's numbers, hitscan bullets against people, cars and walls,
 // shotgun spreads, the grenade launcher's blast, fists, and everything a hit sets off.
+import '../characters/player.js'; // load order: the guns, then the player who fires them
 import { game, emitEvent, onEvent } from '../core/state.js';
 import { raycastWorld } from '../core/collision.js';
 import { spawnTracer, spawnMuzzleFlash, spawnSparks, spawnBlood, spawnExplosion, spawnDust } from '../fx/effects.js';

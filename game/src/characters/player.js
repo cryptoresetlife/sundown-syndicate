@@ -1,21 +1,18 @@
 // The player, Dez Calloway: running, sprinting and jumping on foot, driving, punching, aiming and
 // shooting (also from the driver's seat), health, armour, stamina and the weapon wheel.
+import { cam } from '../core/camera.js';
+import { WEAPONS, WEAPON_ORDER, fireWeapon, hitscan, meleeAttack } from '../combat/weapons.js';
 import * as THREE from '../../vendor/three.module.min.js';
 import { game, emitEvent } from '../core/state.js';
 import { isKeyDown, wasKeyPressed, axis, mouse } from '../core/input.js';
-import { clamp, dampAngle, headingTo } from '../core/mathutil.js';
+import { dampAngle, headingTo } from '../core/mathutil.js';
 import { collideCircle, clampToIsland } from '../core/collision.js';
-import { cam } from '../core/camera.js';
 import { groundHeight } from '../world/layout.js';
 import { createHumanoid, animateHumanoid, showGun } from './humanoid.js';
-import { WEAPONS, WEAPON_ORDER, fireWeapon, hitscan, meleeAttack } from '../combat/weapons.js';
-import { pushOutOfVehicles } from '../vehicles/vehicle.js';
+import { pushOutOfVehicles } from '../vehicles/collisions.js';
 import { nearestEnterableVehicle, enterVehicle, exitVehicle } from '../vehicles/carjack.js';
 import { playSound } from '../audio/sound.js';
 import { spawnDust } from '../fx/effects.js';
-
-const DEZ_LOOK = { skin: 0xc68642, shirt: 0xffb81c, pants: 0x23304d, hair: 0x15100a, shades: true, shoes: 0xf5f5f5 };
-const WALK = 2.3, JOG = 4.6, SPRINT = 7.4;
 
 export class Player {
   constructor(x, z, heading = 0) {
@@ -273,7 +270,5 @@ export class Player {
   }
 }
 
-export function clampHealth(player) {
-  player.health = clamp(player.health, 0, player.maxHealth);
-  player.armor = clamp(player.armor, 0, 100);
-}
+const DEZ_LOOK = { skin: 0xc68642, shirt: 0xffb81c, pants: 0x23304d, hair: 0x15100a, shades: true, shoes: 0xf5f5f5 };
+const WALK = 2.3, JOG = 4.6, SPRINT = 7.4; // metres per second

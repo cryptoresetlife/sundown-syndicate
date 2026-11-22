@@ -6,6 +6,8 @@ import { addBoxCollider } from '../core/collision.js';
 import { GRID, districtOfBlock, lotOfBlock, parcelOf, isLandmarkParcel, VANCE_TOWER_BLOCK } from './layout.js';
 import { makeFacadeTexture, makeSignAtlas, FACADE_TILE_W, FACADE_TILE_H, SIGN_COLS, SIGN_ROWS } from './textures.js';
 
+export { buildBuildings, setBuildingNight };
+
 const KINDS = ['glass', 'office', 'deco', 'stucco', 'warehouse', 'shopfront'];
 const wallMaterials = {};
 let signMaterial = null;
@@ -21,7 +23,7 @@ const ROOF_GREY = 0x8d9096;
 const GENERIC_SIGNS = [1, 2, 3, 7, 8, 9, 10, 13, 14, 16, 17, 18, 20, 21, 22, 23, 24, 25, 27, 29];
 
 /** Builds all buildings into a handful of merged meshes and registers their collision boxes. */
-export function buildBuildings(scene, rnd) {
+function buildBuildings(scene, rnd) {
   const walls = {};
   for (const kind of KINDS) walls[kind] = new MeshBatch();
   const solid = new MeshBatch(); // roofs, parapets, rooftop clutter, houses' roofs
@@ -61,8 +63,8 @@ export function buildBuildings(scene, rnd) {
 }
 
 /** night: 0 at noon, 1 at midnight. Lights the windows and brightens the neon. */
-export function setBuildingNight(night) {
-  for (const kind of KINDS) if (wallMaterials[kind]) wallMaterials[kind].emissiveIntensity = night * (kind === 'shopfront' ? 1.5 : 1.15);
+function setBuildingNight(night) {
+  for (const kind of KINDS) if (wallMaterials[kind]) wallMaterials[kind].emissiveIntensity = night * (kind === 'shopfront' ? 0.5 : 0.95);
   if (signMaterial) signMaterial.color.setScalar(0.82 + night * 0.6);
 }
 

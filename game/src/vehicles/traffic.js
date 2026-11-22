@@ -1,5 +1,6 @@
 // Ambient traffic: keeps the streets near the player full of cars that follow lanes and stop at
 // red lights, fills parking bays with cars to steal, and clears away what is left far behind.
+import { spawnPedestrian, scarePedestrian } from '../characters/pedestrians.js';
 import { game, onEvent } from '../core/state.js';
 import { rand } from '../core/mathutil.js';
 import { cam } from '../core/camera.js';
@@ -9,9 +10,6 @@ import { sun } from '../world/sky.js';
 import { Vehicle } from './vehicle.js';
 import { CIVILIAN_TYPES } from './catalog.js';
 import { LaneDriver } from './driver.js';
-import { spawnPedestrian, scarePedestrian } from '../characters/pedestrians.js';
-
-let spawnClock = 0, parkClock = 0;
 
 /** Puts one AI-driven car in a lane. `at` comes from randomLanePoint. Returns the Vehicle. */
 export function spawnTrafficCar(at, typeId = null) {
@@ -36,6 +34,8 @@ export function spawnParkedCar(spot, typeId = null) {
   spot.vehicle = v;
   return v;
 }
+
+let spawnClock = 0, parkClock = 0;
 
 function clearOf(x, z, radius) {
   for (const v of game.vehicles) if (Math.hypot(v.pos.x - x, v.pos.z - z) < radius) return false;

@@ -1,11 +1,13 @@
 // Sky, sun and the day/night cycle: a shader sky dome with drifting clouds and stars, the sun light
 // with its shadow, and the colours of everything as the in-game clock turns.
+import { lampPosts } from './roads.js';
+import { setBuildingNight } from './buildings.js';
 import * as THREE from '../../vendor/three.module.min.js';
 import { game } from '../core/state.js';
 import { clamp, smoothstep } from '../core/mathutil.js';
 import { makeGlowTexture } from './textures.js';
-import { lampPosts } from './roads.js';
-import { setBuildingNight } from './buildings.js';
+
+export { updateDayNight, setClock, clockText, initSky };
 
 export const sun = { dir: new THREE.Vector3(0.5, 0.8, 0.3), night: 0, day: 1, color: new THREE.Color(1, 1, 1) };
 export const GAME_HOUR_SECONDS = 50; // one in-game hour of real time
@@ -67,7 +69,7 @@ const NIGHT_TOP = new THREE.Color(0x050a1c), NIGHT_HORIZON = new THREE.Color(0x1
 const SUN_DAY = new THREE.Color(0xfff4dc), SUN_DUSK = new THREE.Color(0xff9a50), MOON = new THREE.Color(0x8fa8ff);
 const tmpA = new THREE.Color(), tmpB = new THREE.Color();
 
-export function initSky(scene) {
+function initSky(scene) {
   dome = new THREE.Mesh(
     new THREE.SphereGeometry(100, 32, 16),
     new THREE.ShaderMaterial({ uniforms: skyUniforms, vertexShader: SKY_VERT, fragmentShader: SKY_FRAG, side: THREE.BackSide, depthWrite: false, fog: false }),
@@ -100,12 +102,12 @@ export function initSky(scene) {
   applyClock();
 }
 
-export function setClock(hour) {
+function setClock(hour) {
   game.clock = ((hour % 24) + 24) % 24;
   applyClock();
 }
 
-export function clockText() {
+function clockText() {
   const h = Math.floor(game.clock), m = Math.floor((game.clock - h) * 60);
   return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
 }
@@ -141,7 +143,7 @@ function applyClock() {
 }
 
 /** Advances the clock and keeps the sky dome and the shadow camera centred on the action. */
-export function updateDayNight(dt, focus) {
+function updateDayNight(dt, focus) {
   if (dt > 0 && !game.debug.freezeClock) {
     game.clock += dt / GAME_HOUR_SECONDS;
     if (game.clock >= 24) { game.clock -= 24; game.day++; }

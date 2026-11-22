@@ -1,5 +1,6 @@
 // The Marisol Bay Police Department: dispatches cruisers, tactical trucks and roadblocks to match
 // the wanted level, drives the pursuit, puts officers on foot to arrest or shoot, and books the player.
+import '../missions/story.js'; // load order: the law, then the story that breaks it
 import { game, onEvent, emitEvent } from '../core/state.js';
 import { rand, headingTo } from '../core/mathutil.js';
 import { cam } from '../core/camera.js';
@@ -12,6 +13,8 @@ import { fireWeapon } from '../combat/weapons.js';
 import { wanted, reportCrime } from './wanted.js';
 import { updateHelicopter, dismissHelicopter } from './helicopter.js';
 
+export { updatePolice, spawnPoliceCruiser, spawnRoadblock, spawnOfficer, clearPolice, arrestProgress };
+
 const units = []; // { vehicle, crew, deployed, tactical, roadblock, shotClock }
 const CRUISERS = [0, 1, 2, 3, 3, 4], TRUCKS = [0, 0, 0, 0, 1, 2];
 let dispatchClock = 0, roadblockClock = 12, arrestClock = 0;
@@ -20,7 +23,7 @@ const OFFICER_LOOK = { skin: 0xe0ac7e, shirt: 0x1f3f73, pants: 0x14203a, hair: 0
 const TACTICAL_LOOK = { skin: 0xc68642, shirt: 0x1a1f2a, pants: 0x1a1f2a, hair: 0x111111, hat: 'helmet', vest: 0x2a3140, shades: true, shoes: 0x111111 };
 
 /** One officer on foot. tactical officers wear armour and carry automatic weapons. */
-export function spawnOfficer(x, z, tactical = false) {
+function spawnOfficer(x, z, tactical = false) {
   const skin = rand.pick([0xf2c9a0, 0xe0ac7e, 0xc68642, 0x8d5524]);
   const npc = new Npc({
     x, z, look: { ...(tactical ? TACTICAL_LOOK : OFFICER_LOOK), skin }, role: 'cop', health: tactical ? 130 : 85,
@@ -100,7 +103,7 @@ function makeUnit(vehicle, tactical = false) {
 }
 
 /** Sends one more police vehicle after the player; 'bulwark' is the armoured tactical truck. */
-export function spawnPoliceCruiser(typeId = 'cruiser', at = null) {
+function spawnPoliceCruiser(typeId = 'cruiser', at = null) {
   const point = at || pickSpawnPoint(65, 165);
   if (!point) return null;
   const v = new Vehicle(typeId, point.x, point.z, point.heading);
@@ -109,7 +112,7 @@ export function spawnPoliceCruiser(typeId = 'cruiser', at = null) {
 }
 
 /** Two cruisers nose to tail across the road ahead of a fleeing car, officers behind them. */
-export function spawnRoadblock() {
+function spawnRoadblock() {
   const p = game.player, v = p.vehicle;
   if (!v || Math.abs(v.speed) < 8) return false;
   const di = Math.abs(v.forwardX) > Math.abs(v.forwardZ) ? Math.sign(v.forwardX) : 0;
@@ -163,7 +166,7 @@ function standDown(unit) {
 }
 
 /** Run every frame: sizes the response to the stars, runs each unit, and makes arrests. */
-export function updatePolice(dt) {
+function updatePolice(dt) {
   const p = game.player;
   // patrol cars already cruising in traffic join the chase
   for (const v of game.vehicles) {
@@ -231,10 +234,10 @@ export function updatePolice(dt) {
   } else arrestClock = 0;
 }
 
-export function arrestProgress() { return arrestClock; }
+function arrestProgress() { return arrestClock; }
 
 /** Removes every police unit at once (after an arrest, a death, or a respray). */
-export function clearPolice() {
+function clearPolice() {
   for (const u of units) { if (!u.vehicle.removed && u.vehicle.driver !== 'player') u.vehicle.remove(); u.vehicle.policeUnit = null; }
   units.length = 0;
   for (const n of [...game.npcs]) if (n.role === 'cop' && !n.persistent) n.remove();

@@ -1,5 +1,6 @@
 // The heads-up display: wanted stars, money, weapon and ammo, clock, the minimap with health and
 // armour, the mission objective with timer and meter, subtitles, speedometer, prompts and banners.
+import { drawMinimap } from './minimap.js';
 import { game, onEvent } from '../core/state.js';
 import { formatMoney, formatTime, clamp } from '../core/mathutil.js';
 import { districtAt, streetNameAt, DISTRICTS } from '../world/layout.js';
@@ -12,7 +13,8 @@ import { dialogue, SPEAKERS } from '../missions/dialogue.js';
 import { nearestEnterableVehicle } from '../vehicles/carjack.js';
 import { radio } from '../audio/radio.js';
 import { down } from '../systems/respawn.js';
-import { drawMinimap } from './minimap.js';
+
+export { initHud, updateHud, showHint };
 
 const el = {};
 const last = {};
@@ -54,7 +56,7 @@ const TEMPLATE = `
 <div id="h-help">WASD move · Shift sprint · Space jump · F enter / exit car · Mouse aim &amp; fire · Q / E weapons · M map · Esc pause</div>
 <div id="h-down"><div id="h-down-title"></div><div id="h-down-sub"></div></div>`;
 
-export function initHud() {
+function initHud() {
   const root = document.getElementById('hud');
   root.innerHTML = TEMPLATE;
   for (const node of root.querySelectorAll('[id]')) el[node.id.replace('h-', '').replace(/-(\w)/g, (m, c) => c.toUpperCase())] = node;
@@ -83,13 +85,13 @@ function width(key, ratio) {
   el[key].style.width = w;
 }
 
-export function showHint(text, seconds = 4.5) {
+function showHint(text, seconds = 4.5) {
   set('hint', text);
   hintTime = seconds;
 }
 
 /** Refreshes every HUD element from the game state. Cheap: the DOM is only touched on change. */
-export function updateHud(dt) {
+function updateHud(dt) {
   const p = game.player;
   const playing = game.mode === 'play' || game.mode === 'cutscene' || game.mode === 'down' || game.mode === 'map' || game.mode === 'paused' || game.mode === 'shop';
   el.root.classList.toggle('on', playing && !!p);

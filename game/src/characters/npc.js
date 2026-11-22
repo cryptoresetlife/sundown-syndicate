@@ -7,7 +7,7 @@ import { collideCircle, clampToIsland, sightBlocked } from '../core/collision.js
 import { groundHeight } from '../world/layout.js';
 import { createHumanoid, animateHumanoid, showGun } from './humanoid.js';
 import { WEAPONS, fireWeapon, meleeAttack } from '../combat/weapons.js';
-import { pushOutOfVehicles } from '../vehicles/vehicle.js';
+import { pushOutOfVehicles } from '../vehicles/collisions.js';
 import { playSound } from '../audio/sound.js';
 
 export class Npc {

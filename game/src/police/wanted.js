@@ -1,8 +1,11 @@
 // The wanted level: crimes seen by witnesses or police add heat, heat becomes one to five stars,
 // and the stars fade only after the player stays out of every officer's sight for long enough.
+import './police.js'; // load order: the wanted level, then the police who answer it
 import { game, onEvent, emitEvent } from '../core/state.js';
 import { sightBlocked } from '../core/collision.js';
 import { playSound } from '../audio/sound.js';
+
+export { updateWantedLevel, reportCrime, setWantedLevel, clearWantedLevel, addHeat, registerSpotter };
 
 export const wanted = {
   stars: 0,
@@ -32,7 +35,7 @@ const CRIMES = {
 const spotters = [];
 
 /** Other police units (the helicopter) add their own "can I see the player" test here. */
-export function registerSpotter(fn) {
+function registerSpotter(fn) {
   spotters.push(fn);
 }
 
@@ -67,7 +70,7 @@ function civilianWitness(x, z, range) {
 }
 
 /** Tells the police about something the player did at (x, z). */
-export function reportCrime(kind, x, z) {
+function reportCrime(kind, x, z) {
   const c = CRIMES[kind];
   if (!c || game.flags.policeBlind || !game.player) return;
   const known = c.always || wanted.stars > 0 || officerSees(c.range + 20) || (civilianWitness(x, z, c.range) && Math.random() < 0.7);
@@ -75,19 +78,19 @@ export function reportCrime(kind, x, z) {
   addHeat(c.heat, c.min || 0);
 }
 
-export function addHeat(amount, minStars = 0) {
+function addHeat(amount, minStars = 0) {
   wanted.heat = Math.min(260, wanted.heat + amount);
   const stars = Math.max(starsForHeat(wanted.heat), minStars, wanted.stars);
   if (minStars > starsForHeat(wanted.heat)) wanted.heat = STAR_HEAT[minStars];
   applyStars(stars);
 }
 
-export function setWantedLevel(stars) {
+function setWantedLevel(stars) {
   wanted.heat = STAR_HEAT[stars] + (stars > 0 ? 2 : 0);
   applyStars(stars, true);
 }
 
-export function clearWantedLevel(silent = false) {
+function clearWantedLevel(silent = false) {
   if (wanted.stars > 0 && !silent) { playSound('cleared'); emitEvent('wantedCleared', {}); }
   wanted.stars = 0; wanted.heat = 0; wanted.hidden = 0; wanted.seen = false;
   emitEvent('wantedChanged', { stars: 0 });
@@ -108,7 +111,7 @@ function applyStars(stars, force = false) {
 }
 
 /** Run every frame: tracks whether the police can see the player and cools the level off when they cannot. */
-export function updateWantedLevel(dt) {
+function updateWantedLevel(dt) {
   const p = game.player;
   if (!p) return;
   wanted.gunfireClock -= dt;

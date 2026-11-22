@@ -1,8 +1,9 @@
 // The car radio: four stations of music composed and synthesised live (drums, bass, chords and
 // lead from step patterns), switched with R while driving. Nothing is sampled or downloaded.
+import '../world/sky.js'; // load order: the radio, then sky, roads and buildings
+import { audioContext, musicBus, playSound } from './sound.js';
 import { game, emitEvent } from '../core/state.js';
 import { wasKeyPressed } from '../core/input.js';
-import { audioContext, musicBus, playSound } from './sound.js';
 
 // Patterns are 16 steps to the bar: x = hit, - = rest. Chords are semitone offsets from the root note.
 const STATIONS = [

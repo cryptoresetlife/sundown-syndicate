@@ -1,5 +1,6 @@
 // Builds Marisol Bay: lays the ground (asphalt, sidewalks, lawns, sand), then calls on the roads,
 // buildings, props, sea and sky modules to raise the rest of the island.
+import '../vehicles/traffic.js'; // load order: the city, then the traffic and people that fill it
 import * as THREE from '../../vendor/three.module.min.js';
 import { game } from '../core/state.js';
 import { MeshBatch } from '../core/meshbatch.js';
@@ -11,10 +12,6 @@ import { buildBuildings } from './buildings.js';
 import { buildProps } from './props.js';
 import { buildOcean, updateOcean } from './ocean.js';
 import { initSky, updateDayNight } from './sky.js';
-
-const LOT_COLORS = { downtown: 0xa9a8a2, midtown: 0xb3ad9f, strip: 0xe9dcc2, heights: 0x5fb04c, southside: 0xb9a184, docks: 0x767a80, park: 0x52a846 };
-const ASPHALT = 0x45484e, PAVING = 0xc9c5ba, SAND = 0xf3dfae;
-let animateProps = null;
 
 /** Creates the whole static city in the scene. Deterministic: the same island every run. */
 export function buildCity(scene) {
@@ -77,3 +74,7 @@ function buildGround(scene) {
   const mesh = g.mesh(mat, false);
   scene.add(mesh);
 }
+
+const LOT_COLORS = { downtown: 0xa9a8a2, midtown: 0xb3ad9f, strip: 0xe9dcc2, heights: 0x5fb04c, southside: 0xb9a184, docks: 0x767a80, park: 0x52a846 };
+const ASPHALT = 0x45484e, PAVING = 0xc9c5ba, SAND = 0xf6e3b4;
+let animateProps = null;

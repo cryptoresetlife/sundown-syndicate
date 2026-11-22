@@ -1,19 +1,8 @@
 // Saving and loading: story progress, money, weapons, stats, collectibles and settings are kept in
 // the browser's localStorage, so a game saved at a safehouse is there on the next visit.
+import '../economy/shops.js'; // load order: saving, then the shops and safehouses, then the radio
 import { game } from '../core/state.js';
 import { LANDMARKS } from '../world/layout.js';
-
-const SAVE_KEY = 'sundown-syndicate.save.v1';
-const SETTINGS_KEY = 'sundown-syndicate.settings.v1';
-
-function storage() {
-  try { return window.localStorage; } catch (err) { return null; }
-}
-
-export function hasSavedGame() {
-  const s = storage();
-  return !!(s && s.getItem(SAVE_KEY));
-}
 
 /** Writes the current game. `at` is the landmark id the player wakes up at after loading. */
 export function saveGame(at = null) {
@@ -25,6 +14,11 @@ export function saveGame(at = null) {
     health: p.health, armor: p.armor, weapons: p.weapons, current: p.current,
   };
   try { s.setItem(SAVE_KEY, JSON.stringify(data)); return true; } catch (err) { return false; }
+}
+
+export function hasSavedGame() {
+  const s = storage();
+  return !!(s && s.getItem(SAVE_KEY));
 }
 
 export function readSavedGame() {
@@ -61,4 +55,12 @@ export function loadSettings() {
   const s = storage();
   if (!s) return;
   try { Object.assign(game.settings, JSON.parse(s.getItem(SETTINGS_KEY) || '{}')); } catch (err) { /* keep defaults */ }
+}
+
+const SAVE_KEY = 'sundown-syndicate.save.v1';
+const SETTINGS_KEY = 'sundown-syndicate.settings.v1';
+
+/** localStorage, or null where the browser forbids it (private windows, file: pages). */
+function storage() {
+  try { return window.localStorage; } catch (err) { return null; }
 }

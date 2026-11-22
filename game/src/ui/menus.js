@@ -1,16 +1,18 @@
 // Menus: the title screen, pause menu with stats, settings, controls, the full-screen city map,
 // the gun shop counter and the safehouse (save, sleep, buy property).
+import { hasSavedGame, saveGame, saveSettings } from '../systems/save.js';
+import { buyWeapon, buyArmor, buySafehouse, weaponAvailable, ARMOR_PRICE, WEAPON_UNLOCKS } from '../economy/shops.js';
 import { game, onEvent, emitEvent } from '../core/state.js';
 import { wasKeyPressed, releaseMouseLook, requestMouseLook } from '../core/input.js';
 import { formatMoney } from '../core/mathutil.js';
 import { WEAPONS, WEAPON_ORDER } from '../combat/weapons.js';
-import { buyWeapon, buyArmor, buySafehouse, weaponAvailable, ARMOR_PRICE, WEAPON_UNLOCKS } from '../economy/shops.js';
 import { storyMissions } from '../missions/missions.js';
 import { FLAMINGO_TOTAL } from '../world/pickups.js';
-import { hasSavedGame, saveGame, saveSettings } from '../systems/save.js';
 import { initAudio, applyVolumes, playSound, silenceLoops } from '../audio/sound.js';
 import { setClock } from '../world/sky.js';
 import { drawCityMap, mapLegend } from './minimap.js';
+
+export { showTitle, openPause, toggleMap, closeMenus, initMenus, updateMenus };
 
 const screens = {};
 let actions = null, open = null, shopContext = null, returnTo = null;
@@ -45,7 +47,7 @@ function showScreen(id) {
 }
 
 /** Builds every menu. `gameActions` supplies newGame() and continueGame() from main.js. */
-export function initMenus(gameActions) {
+function initMenus(gameActions) {
   actions = gameActions;
   screen('title', '<div class="logo">SUNDOWN<br>SYNDICATE</div><div class="tagline">A MARISOL BAY CRIME STORY</div><div id="m-title-buttons"></div><div class="menu-note">An original open-world crime game: one sun-soaked island, eight story chapters, street races, taxi fares, a five-star police response and twenty Golden Flamingos. Everything you see and hear is generated in code.</div>');
   screen('pause', '<div class="menu-title">PAUSED</div><div id="m-pause-stats" class="stats-grid"></div><div id="m-pause-buttons"></div>');
@@ -82,7 +84,7 @@ function buildSettings() {
   rows.appendChild(button('Back', () => showScreen(returnTo)));
 }
 
-export function showTitle() {
+function showTitle() {
   game.mode = 'title';
   const box = document.getElementById('m-title-buttons');
   box.innerHTML = '';
@@ -93,7 +95,7 @@ export function showTitle() {
   showScreen('title');
 }
 
-export function openPause() {
+function openPause() {
   if (game.mode !== 'play') return;
   game.mode = 'paused';
   const st = game.stats, total = storyMissions().length;
@@ -110,7 +112,7 @@ export function openPause() {
   showScreen('pause');
 }
 
-export function closeMenus() {
+function closeMenus() {
   showScreen(null);
   shopContext = null;
   if (game.mode === 'paused' || game.mode === 'shop' || game.mode === 'map') {
@@ -119,7 +121,7 @@ export function closeMenus() {
   }
 }
 
-export function toggleMap() {
+function toggleMap() {
   if (game.mode === 'map') { closeMenus(); return; }
   if (game.mode !== 'play') return;
   game.mode = 'map';
@@ -155,7 +157,7 @@ function renderShop() {
 }
 
 /** Run every frame: the keys that open and close menus. */
-export function updateMenus() {
+function updateMenus() {
   const esc = wasKeyPressed('Escape');
   if (game.pendingPause) { game.pendingPause = false; if (game.mode === 'play' && !esc) openPause(); }
   if (game.mode === 'play') {

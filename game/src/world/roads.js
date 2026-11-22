@@ -1,8 +1,11 @@
 // The road network of Marisol Bay: which intersections and road segments exist, lane geometry for
 // traffic, route finding for police, the traffic-light cycle, and the painted road markings.
+import './buildings.js'; // load order: roads, then the buildings between them
 import * as THREE from '../../vendor/three.module.min.js';
 import { MeshBatch } from '../core/meshbatch.js';
 import { GRID, BLOCK, ROAD_HALF, CITY, LANE } from './layout.js';
+
+export { buildRoads, updateTrafficLights, lightState, findRoute, randomLanePoint, lanePoint };
 
 const LIGHT_PERIOD = 18;
 let lightClock = 0;
@@ -42,7 +45,7 @@ export function exitsOf(i, j) {
 }
 
 /** Breadth-first route over intersections; returns [{i, j}, ...] from start to goal inclusive. */
-export function findRoute(from, to) {
+function findRoute(from, to) {
   const key = (n) => n.i * 100 + n.j;
   const prev = new Map([[key(from), null]]);
   const queue = [from];
@@ -61,7 +64,7 @@ export function findRoute(from, to) {
 }
 
 /** Colour of the light facing traffic that travels along axis 'ns' or 'ew' into intersection (i, j). */
-export function lightState(i, j, axis) {
+function lightState(i, j, axis) {
   if (exitsOf(i, j).length < 3) return 'green';
   let t = (lightClock + ((i * 3 + j * 5) % 4) * 4.5) % LIGHT_PERIOD;
   if (axis === 'ew') t = (t + LIGHT_PERIOD / 2) % LIGHT_PERIOD;
@@ -74,7 +77,7 @@ const BULB_ON = [new THREE.Color(0xff2a1a), new THREE.Color(0xffc21a), new THREE
 const BULB_OFF = [new THREE.Color(0x3a0a06), new THREE.Color(0x3a2c06), new THREE.Color(0x063a12)];
 const STATE_LAMP = { red: 0, yellow: 1, green: 2 };
 
-export function updateTrafficLights(dt) {
+function updateTrafficLights(dt) {
   const before = Math.floor(lightClock * 4);
   lightClock += dt;
   if (!bulbMesh || Math.floor(lightClock * 4) === before) return;
@@ -86,7 +89,7 @@ export function updateTrafficLights(dt) {
 }
 
 /** A random point in a driving lane: { x, z, heading, i, j, di, dj } heading from node (i,j) toward (i+di,j+dj). */
-export function randomLanePoint(rnd, nearX, nearZ, minDist, maxDist) {
+function randomLanePoint(rnd, nearX, nearZ, minDist, maxDist) {
   for (let tries = 0; tries < 30; tries++) {
     const i = rnd.int(0, GRID - 1), j = rnd.int(0, GRID - 1);
     const exits = exitsOf(i, j);
@@ -103,7 +106,7 @@ export function randomLanePoint(rnd, nearX, nearZ, minDist, maxDist) {
 }
 
 /** The point `along` metres down the lane from node (i,j) toward (i+di,j+dj); lane 0 is inner, 1 is kerbside. */
-export function lanePoint(i, j, di, dj, along, lane = 0) {
+function lanePoint(i, j, di, dj, along, lane = 0) {
   const off = LANE * (lane + 0.5);
   return { x: i * BLOCK + di * along - dj * off, z: j * BLOCK + dj * along + di * off };
 }
@@ -111,7 +114,7 @@ export function lanePoint(i, j, di, dj, along, lane = 0) {
 const WHITE = 0xf4f4f0, YELLOW = 0xf2c230, POLE = 0x4a4f55;
 
 /** Paints lane lines, stop lines and zebra crossings, and stands up the traffic lights and street lamps. */
-export function buildRoads(scene) {
+function buildRoads(scene) {
   const marks = new MeshBatch();
   const poles = new MeshBatch();
   const Y = 0.035;

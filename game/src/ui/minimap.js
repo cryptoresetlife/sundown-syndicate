@@ -1,5 +1,6 @@
 // The minimap and the full city map: the island is painted once to an off-screen canvas (districts,
 // streets, park, beach, pier), then drawn rotated around the player with blips for everything that matters.
+import './menus.js'; // load order: HUD, minimap, then the menus
 import { game } from '../core/state.js';
 import { cam } from '../core/camera.js';
 import { GRID, BLOCK, ROAD_HALF, CITY, ISLAND, PIER, DISTRICTS, AVENUES, STREETS, LANDMARKS, districtOfBlock, lotOfBlock } from '../world/layout.js';
@@ -7,6 +8,8 @@ import { nodeExists } from '../world/roads.js';
 import { markers } from '../world/markers.js';
 import { wanted } from '../police/wanted.js';
 import { helicopterPosition } from '../police/helicopter.js';
+
+export { drawMinimap, drawCityMap, mapLegend };
 
 const ORIGIN_X = -150, ORIGIN_Z = -150, MAP_W = 1360, MAP_H = 1130; // world window covered by the base map, 1 px per metre
 let base = null;
@@ -70,7 +73,7 @@ function arrow(g, x, y, angle, size, color) {
 }
 
 /** Draws the round minimap: north-free, rotating so that "up" is where the camera looks. */
-export function drawMinimap(canvas, zoom = 1.15) {
+function drawMinimap(canvas, zoom = 1.15) {
   if (!base) paintBaseMap();
   const g = canvas.getContext('2d'), size = canvas.width, c = size / 2, p = game.player;
   const theta = cam.yaw - Math.PI;
@@ -135,7 +138,7 @@ export function drawMinimap(canvas, zoom = 1.15) {
 }
 
 /** Draws the whole island with street names, districts, landmarks and live blips (the M key map). */
-export function drawCityMap(canvas) {
+function drawCityMap(canvas) {
   if (!base) paintBaseMap();
   const g = canvas.getContext('2d'), W = canvas.width, H = canvas.height, p = game.player;
   const scale = Math.min(W / MAP_W, H / MAP_H);
@@ -160,6 +163,6 @@ export function drawCityMap(canvas) {
   arrow(g, sx(p.pos.x), sy(p.pos.z), Math.PI - p.heading, 11, '#ffffff');
 }
 
-export function mapLegend() {
+function mapLegend() {
   return [['#ff7ab8', 'L', 'Story job'], ['#4dff9a', 'R', 'Street race'], ['#ff5a5a', 'G', 'Iron Pelican Arms'], ['#ff9a3d', 'P', 'Fresh Coat respray'], ['#ffe14a', 'F', 'Food'], ['#4dff9a', 'H', 'Safehouse'], ['#ffffff', '+', 'Mercy General'], ['#3a7bff', '★', 'Police']];
 }

@@ -2,7 +2,8 @@
 // frame advances each system in turn (player, vehicles, people, police, missions) and draws the result.
 import * as THREE from '../vendor/three.module.min.js';
 import { buildCity, updateCity } from './world/city.js';
-import { Vehicle, collideVehicles } from './vehicles/vehicle.js';
+import { Vehicle } from './vehicles/vehicle.js';
+import { collideVehicles } from './vehicles/collisions.js';
 import { updateTraffic } from './vehicles/traffic.js';
 import { Player } from './characters/player.js';
 import { updatePedestrians } from './characters/pedestrians.js';
@@ -11,7 +12,7 @@ import { updatePolice, clearPolice } from './police/police.js';
 import { updateGangs } from './combat/gangs.js';
 import { updateMissions, refreshStartMarkers, mission, failMission } from './missions/missions.js';
 import './missions/story.js';
-import { updateActivities, stopTaxiWork } from './missions/activities.js';
+import { updateTaxiFares, stopTaxiWork } from './missions/activities.js';
 import { updateDialogue, say, clearDialogue } from './missions/dialogue.js';
 import { placeShopMarkers, updateShops } from './economy/shops.js';
 import { initHud, updateHud, showHint } from './ui/hud.js';
@@ -119,7 +120,7 @@ function updateWorld(dt) {
   updatePedestrians(dt);
   if (mode !== 'title') {
     updateGangs(dt);
-    if (mode === 'play') { updateWantedLevel(dt); updatePolice(dt); updateShops(dt); updateActivities(dt); }
+    if (mode === 'play') { updateWantedLevel(dt); updatePolice(dt); updateShops(dt); updateTaxiFares(dt); }
     updateMissions(dt);
     updateDialogue(dt, true);
     updateRespawn(dt);

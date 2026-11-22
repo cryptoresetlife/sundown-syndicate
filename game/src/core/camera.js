@@ -1,5 +1,6 @@
 // The third-person chase camera: orbits the player on foot, trails the car when driving, pulls in
 // for aiming, widens with speed, never clips through buildings, and shakes with explosions.
+import '../ui/hud.js'; // load order: the camera, then what is drawn over its picture
 import * as THREE from '../../vendor/three.module.min.js';
 import { game } from './state.js';
 import { mouse } from './input.js';

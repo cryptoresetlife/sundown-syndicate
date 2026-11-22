@@ -6,15 +6,6 @@ import { pointInBuilding } from '../core/collision.js';
 import { districtAt, BLOCK, ROAD_HALF } from '../world/layout.js';
 import { Npc } from '../characters/npc.js';
 
-const KING_SHIRTS = [0xff6b4a, 0xff8a5c, 0xf2542d];
-let turfClock = 2;
-
-function lookFor(gang) {
-  const skin = rand.pick([0xf2c9a0, 0xe0ac7e, 0xc68642, 0x8d5524, 0x5c3a1e]);
-  if (gang === 'vance') return { skin, shirt: 0x1b1b1f, pants: 0x1b1b1f, hair: 0x111111, shades: true, shoes: 0x111111 };
-  return { skin, shirt: rand.pick(KING_SHIRTS), pants: rand.pick([0xf5f5f5, 0x2a3a5a]), hair: 0x111111, hat: rand.chance(0.6) ? 'cap' : null, hatColor: 0xff6b4a, sleeveless: rand.chance(0.5), shades: rand.chance(0.4) };
-}
-
 /** opts: { gang: 'kings' | 'vance', weapon, hostile, health, hold (stay near the post), persistent } */
 export function spawnGangster(x, z, opts = {}) {
   const gang = opts.gang || 'kings';
@@ -27,6 +18,16 @@ export function spawnGangster(x, z, opts = {}) {
   npc.persistent = !!opts.persistent;
   npc.mem = { post: { x, z }, hold: !!opts.hold, alert: 0, strafe: rand.chance(0.5) ? 1 : -1, strafeClock: 0, lastKnown: null };
   return npc;
+}
+
+const KING_SHIRTS = [0xff6b4a, 0xff8a5c, 0xf2542d];
+let turfClock = 2;
+
+/** Coral Kings wear coral; Vance's security wears black. */
+function lookFor(gang) {
+  const skin = rand.pick([0xf2c9a0, 0xe0ac7e, 0xc68642, 0x8d5524, 0x5c3a1e]);
+  if (gang === 'vance') return { skin, shirt: 0x1b1b1f, pants: 0x1b1b1f, hair: 0x111111, shades: true, shoes: 0x111111 };
+  return { skin, shirt: rand.pick(KING_SHIRTS), pants: rand.pick([0xf5f5f5, 0x2a3a5a]), hair: 0x111111, hat: rand.chance(0.6) ? 'cap' : null, hatColor: 0xff6b4a, sleeveless: rand.chance(0.5), shades: rand.chance(0.4) };
 }
 
 export function alertGang(x, z, range, gang = null) {

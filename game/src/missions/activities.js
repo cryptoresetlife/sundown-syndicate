@@ -1,5 +1,7 @@
 // Side activities outside the story: Sol Cab taxi fares, three street races around the island,
 // and the reward for hunting down the Golden Flamingos.
+import { mission, registerSideMissions } from './missions.js';
+import { race } from './objectives.js';
 import { game, onEvent, emitEvent, addMoney } from '../core/state.js';
 import { wasKeyPressed } from '../core/input.js';
 import { rand, formatMoney } from '../core/mathutil.js';
@@ -8,9 +10,10 @@ import { exitsOf, lanePoint } from '../world/roads.js';
 import { addMarker, removeMarker } from '../world/markers.js';
 import { FLAMINGO_TOTAL } from '../world/pickups.js';
 import { spawnPedestrian } from '../characters/pedestrians.js';
-import { mission, registerSideMissions, race } from './missions.js';
 import { say } from './dialogue.js';
 import { playSound } from '../audio/sound.js';
+
+export { updateTaxiFares, stopTaxiWork, STREET_RACES };
 
 export const taxi = { on: false, state: 'idle', passenger: null, marker: null, fares: 0, streak: 0, timeLeft: 0, tripLength: 0, earned: 0 };
 
@@ -19,14 +22,15 @@ const FARE_LINES = [
   'My ex is behind us. Drive.', 'I will tip if we beat the light.', 'First time in Marisol Bay. Is it always this loud?',
 ];
 
-registerSideMissions([
+const STREET_RACES = [
   { id: 'race_tidewater', title: 'Tidewater Sprint', side: true, needVehicle: true, unlockAt: 1, x: 798, z: 196, letter: 'R', reward: 800, passText: 'RACE WON',
     steps: [race({ nodes: [[10, 3], [10, 7], [10, 10], [7, 10], [7, 8], [10, 8], [10, 5]], rivals: [{ type: 'marlin', paint: 0x35c8e8, pace: 0.72 }, { type: 'caliente', paint: 0xffd23f, pace: 0.78 }] })] },
   { id: 'race_docks', title: 'Dockside Dash', side: true, needVehicle: true, unlockAt: 2, x: -2, z: 500, letter: 'R', reward: 700, passText: 'RACE WON',
     steps: [race({ nodes: [[0, 7], [0, 10], [3, 10], [3, 8], [1, 8], [1, 6], [0, 6]], rivals: [{ type: 'dune', paint: 0xe63946, pace: 0.95 }, { type: 'caliente', paint: 0x2b2d42, pace: 0.76 }] })] },
   { id: 'race_heights', title: 'Heights Loop', side: true, needVehicle: true, unlockAt: 3, x: 250, z: 2, letter: 'R', reward: 900, passText: 'RACE WON',
     steps: [race({ nodes: [[4, 0], [8, 0], [8, 2], [4, 2], [4, 1], [1, 1], [1, 0], [3, 0]], rivals: [{ type: 'vanta', paint: 0xff70a6, pace: 0.66 }, { type: 'marlin', paint: 0x06d6a0, pace: 0.76 }, { type: 'caliente', paint: 0xffffff, pace: 0.8 }] })] },
-]);
+];
+registerSideMissions(STREET_RACES);
 
 function setTaxiMarker(x, z, color, label) {
   if (taxi.marker) removeMarker(taxi.marker);
@@ -67,7 +71,7 @@ function startTrip() {
   say([['FARE', rand.pick(FARE_LINES).replace('Club Flamingo', dest.name)]]);
 }
 
-export function stopTaxiWork(reason = '') {
+function stopTaxiWork(reason = '') {
   if (!taxi.on) return;
   taxi.on = false; taxi.state = 'idle';
   if (taxi.marker) { removeMarker(taxi.marker); taxi.marker = null; }
@@ -78,7 +82,7 @@ export function stopTaxiWork(reason = '') {
 }
 
 /** Taxi work: toggled with T while driving a Sol Cab and no mission is running. */
-export function updateActivities(dt) {
+function updateTaxiFares(dt) {
   const p = game.player, v = p.vehicle;
   const inCab = v && v.typeId === 'solcab' && !v.destroyed;
   if (!taxi.on) {

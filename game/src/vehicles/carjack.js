@@ -1,11 +1,10 @@
 // Getting in and out of cars: stealing a parked one, dragging a driver out of a moving one
 // (a carjacking, which witnesses report), and climbing out again without ending up inside a wall.
+import './vehicle.js'; // load order: stealing cars, then the cars themselves
 import { game, emitEvent } from '../core/state.js';
 import { pointInBuilding } from '../core/collision.js';
 import { playSound } from '../audio/sound.js';
 import { snapCameraBehind } from '../core/camera.js';
-
-export const ENTER_RANGE = 3.6;
 
 /** The closest vehicle the player could get into right now, or null. */
 export function nearestEnterableVehicle(player) {
@@ -18,6 +17,8 @@ export function nearestEnterableVehicle(player) {
   }
   return best;
 }
+
+export const ENTER_RANGE = 3.6; // metres from a car's bodywork within which F works
 
 /** Throws the AI driver out onto the street and puts the player behind the wheel. */
 export function hijackVehicle(player, vehicle) {

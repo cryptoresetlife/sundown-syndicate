@@ -1,5 +1,6 @@
 // Places to spend money: Iron Pelican Arms gun shops, Fresh Coat Customs paint shops that repair
 // the car and shake the police, food stands that heal, and safehouses where the game is saved.
+import '../audio/radio.js'; // load order: shops and safehouses, then the radio and the world
 import { game, emitEvent, spendMoney } from '../core/state.js';
 import { rand, formatMoney } from '../core/mathutil.js';
 import { LANDMARKS } from '../world/layout.js';
@@ -11,12 +12,14 @@ import { clearPolice } from '../police/police.js';
 import { mission } from '../missions/missions.js';
 import { playSound } from '../audio/sound.js';
 
+export { buyWeapon, buyAmmo, buyArmor, buySafehouse, placeShopMarkers, updateShops };
+
 const shopMarkers = [];
 export const WEAPON_UNLOCKS = { pistol: 0, smg: 2, shotgun: 3, rifle: 5, launcher: 7 };
 export const ARMOR_PRICE = 400, FOOD_PRICE = 20, RESPRAY_PRICE = 250;
 
 /** Places a marker for every shop and safehouse the player has access to. */
-export function placeShopMarkers() {
+function placeShopMarkers() {
   for (const m of shopMarkers) removeMarker(m);
   shopMarkers.length = 0;
   for (const lm of Object.values(LANDMARKS)) {
@@ -39,7 +42,7 @@ export function weaponAvailable(id) {
   return game.storyIndex >= (WEAPON_UNLOCKS[id] ?? 99);
 }
 
-export function buyWeapon(id) {
+function buyWeapon(id) {
   const w = WEAPONS[id], p = game.player;
   if (p.weapons[id]) return buyAmmo(id);
   if (!weaponAvailable(id) || !spendMoney(w.price)) { playSound('uiBack'); return false; }
@@ -49,7 +52,7 @@ export function buyWeapon(id) {
   return true;
 }
 
-export function buyAmmo(id) {
+function buyAmmo(id) {
   const w = WEAPONS[id], p = game.player;
   if (!p.weapons[id] || !spendMoney(w.ammoPrice)) { playSound('uiBack'); return false; }
   p.weapons[id].ammo += w.ammoPack;
@@ -57,7 +60,7 @@ export function buyAmmo(id) {
   return true;
 }
 
-export function buyArmor() {
+function buyArmor() {
   const p = game.player;
   if (p.armor >= 100 || !spendMoney(ARMOR_PRICE)) { playSound('uiBack'); return false; }
   p.armor = 100;
@@ -89,7 +92,7 @@ function respray(vehicle) {
 }
 
 /** Run every frame: reacts when the player steps or drives into a shop marker. */
-export function updateShops() {
+function updateShops() {
   const p = game.player;
   if (p.dead || game.mode !== 'play') return;
   for (const m of shopMarkers) {
@@ -115,7 +118,7 @@ export function updateShops() {
   }
 }
 
-export function buySafehouse(lm) {
+function buySafehouse(lm) {
   if (!spendMoney(lm.price)) { playSound('uiBack'); return false; }
   game.flags['own_' + lm.id] = true;
   playSound('missionPass');
