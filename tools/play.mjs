@@ -12,7 +12,7 @@ const base = process.env.GAME_URL || 'http://localhost:8123/';
 const out = args.out || 'tools/out';
 mkdirSync(out, { recursive: true });
 
-const b = await Browser.launch({ gl: args.gl || 'angle' });
+const b = await Browser.launch({ gl: args.gl || process.env.GAME_GL || 'angle' });
 // a watchdog, so a scenario that hangs ends itself (and its Chrome) instead of lingering
 const limitMs = Number(args.limit || 105) * 1000;
 setTimeout(() => { console.log(`WATCHDOG: scenario still running after ${limitMs / 1000}s, stopping`); b.close().finally(() => process.exit(2)); }, limitMs).unref();

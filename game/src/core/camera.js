@@ -60,8 +60,8 @@ export function updateChaseCamera(dt) {
     target.set(v.pos.x, v.pos.y + height, v.pos.z);
   } else {
     cam.aiming = p.aiming;
-    dist = cam.aiming ? 3.6 : 5.6;
-    side = cam.aiming ? 1.05 : 0.5;
+    dist = cam.aiming ? 4.3 : 5.8;
+    side = cam.aiming ? 1.15 : 0.5;
     wantFov = cam.aiming ? 50 : 62;
     target.set(p.pos.x, p.pos.y + 1.6, p.pos.z);
   }

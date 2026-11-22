@@ -28,8 +28,11 @@ export class Browser {
       '--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`, `--window-size=${width},${height}`,
       '--no-first-run', '--no-default-browser-check', '--mute-audio', '--hide-scrollbars', '--autoplay-policy=no-user-gesture-required',
       '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows',
-      // 'swiftshader' renders WebGL on the CPU and never touches the graphics driver
-      ...(gl === 'swiftshader' ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-gpu', '--disable-gpu-compositing'] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist']),
+      // 'warp' (Direct3D's software adapter) and 'swiftshader' render WebGL on the CPU, for a machine whose
+      // graphics driver is busy or stuck; 'angle' uses the real GPU
+      ...(gl === 'warp' ? ['--use-angle=d3d11-warp', '--disable-gpu', '--disable-gpu-compositing', '--disable-direct-composition']
+        : gl === 'swiftshader' ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-gpu', '--disable-gpu-compositing']
+          : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist']),
       ...(process.env.CHROME_FLAGS ? process.env.CHROME_FLAGS.split(' ') : []), // extra switches for a troublesome machine
       'about:blank',
     ];

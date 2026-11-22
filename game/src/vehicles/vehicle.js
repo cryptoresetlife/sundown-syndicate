@@ -249,7 +249,7 @@ export class Vehicle {
     if (!glowTexture) glowTexture = makeGlowTexture();
     const make = (color, x) => {
       const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture, color, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, toneMapped: false }));
-      s.scale.setScalar(4.2);
+      s.scale.setScalar(5.4);
       s.position.set(x, this.lightbar.y + 0.1, this.lightbar.z);
       s.visible = false;
       this.chassis.add(s);

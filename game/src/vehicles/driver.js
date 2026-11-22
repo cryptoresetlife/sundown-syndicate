@@ -32,15 +32,16 @@ export function steerToward(vehicle, tx, tz, wantSpeed, dt, state) {
   return err;
 }
 
-/** Distance to the nearest thing in the lane ahead of a vehicle: cars, people, the player. */
-export function obstacleAhead(vehicle, range) {
+/** Distance to the nearest thing in the lane ahead of a vehicle: cars, people, the player.
+ *  offset shifts the lane sideways (positive to the vehicle's left) to look at the next lane over. */
+export function obstacleAhead(vehicle, range, offset = 0) {
   let best = range;
   const fx = vehicle.forwardX, fz = vehicle.forwardZ;
   const test = (x, z, extra) => {
     const dx = x - vehicle.pos.x, dz = z - vehicle.pos.z;
     const along = dx * fx + dz * fz;
     if (along < 1 || along > best + extra) return;
-    const side = Math.abs(dx * fz - dz * fx);
+    const side = Math.abs(dx * fz - dz * fx - offset);
     if (side < vehicle.type.wid / 2 + 0.9 + (extra > 0 ? 0.3 : 0)) best = Math.max(0, along - extra);
   };
   for (const v of game.vehicles) if (v !== vehicle) test(v.pos.x, v.pos.z, v.type.len / 2);
@@ -169,9 +170,27 @@ export class ChaseDriver {
       const wd = Math.hypot(tx - v.pos.x, tz - v.pos.z);
       speed = Math.min(speed, 12 + wd * 0.35);
     } else { tx = t.x; tz = t.z; }
-    const gap = obstacleAhead(v, 5 + Math.abs(v.speed) * 0.6);
-    if (gap < 3 && !(this.direct && dist < 12)) speed = Math.min(speed, 3);
+    const look = 5 + Math.abs(v.speed) * 0.6;
+    const gap = obstacleAhead(v, look);
+    const overtake = this.kind === 'police' && gap < 3 + Math.abs(v.speed) * 0.4 && !(this.direct && dist < 12) ? this.swingOut(look, gap) : null;
+    if (overtake) { tx = overtake.x; tz = overtake.z; speed = Math.min(speed, Math.max(9, Math.abs(v.speed) + 2)); }
+    else if (gap < 3 && !(this.direct && dist < 12)) speed = Math.min(speed, 3);
     steerToward(v, tx, tz, Math.max(speed, 0), dt, this.state);
+  }
+
+  /** A pursuit car boxed in behind traffic picks the clearer lane beside it and goes round,
+   *  rather than queueing at the lights. Returns the point to aim for, or null to stay put. */
+  swingOut(look, gap) {
+    const v = this.vehicle, fx = v.forwardX, fz = v.forwardZ;
+    let best = null, bestGap = gap + 4;
+    for (const o of [3.4, -3.4]) {
+      const ahead = 9 + Math.abs(v.speed) * 0.3;
+      const x = v.pos.x + fx * ahead + fz * o, z = v.pos.z + fz * ahead - fx * o;
+      if (sightBlocked(v.pos.x, v.pos.z, x, z, 1)) continue;
+      const g = obstacleAhead(v, look, o);
+      if (g > bestGap) { bestGap = g; best = { x, z }; }
+    }
+    return best;
   }
 }
 

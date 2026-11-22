@@ -1,6 +1,6 @@
 [
-  { "name": "1-police-chase.jpg", "scenario": "tools/scenarios/shots-chase.mjs", "shows": "Chapter 2: the stolen Marlin GT on Tidewater Drive with the police in pursuit" },
+  { "name": "1-police-chase.jpg", "scenario": "tools/scenarios/shots-chase.mjs", "shows": "Chapter 2: the stolen Marlin GT on Tidewater Drive at four stars, a cruiser on its bumper with the lightbar going" },
   { "name": "2-gang-shootout.jpg", "scenario": "tools/scenarios/shots-shootout.mjs", "shows": "Chapter 4: on foot with the Hornet SMG at the Coral Kings stash house" },
-  { "name": "3-street-race.jpg", "scenario": "tools/scenarios/shots-race.mjs", "shows": "Chapter 6: the Neon Run street race at dusk" },
-  { "name": "4-city-map.jpg", "scenario": "tools/scenarios/shots-menus.mjs", "shows": "The city map opened over a Sol Cab taxi shift" }
+  { "name": "3-street-race.jpg", "scenario": "tools/scenarios/shots-race.mjs", "shows": "The Tidewater Sprint street race down the seafront" },
+  { "name": "4-night-standoff.jpg", "scenario": "tools/scenarios/shots-night.mjs", "shows": "Night on the Ocean Strip: three stars on foot with the Hornet SMG as officers get out of their cruisers" }
 ]

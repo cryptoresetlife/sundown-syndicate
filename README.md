@@ -12,7 +12,7 @@ family's boat works on a developer's shopping list, and takes the city back one 
 
 | | | |
 |---|---|---|
-| ![Shootout with the Coral Kings](screenshots/2-gang-shootout.jpg) | ![Street race at dusk](screenshots/3-street-race.jpg) | ![The city map](screenshots/4-city-map.jpg) |
+| ![Shootout with the Coral Kings](screenshots/2-gang-shootout.jpg) | ![Street race down Tidewater Drive](screenshots/3-street-race.jpg) | ![A standoff with the police at night](screenshots/4-night-standoff.jpg) |
 
 ## What is in it
 
@@ -24,7 +24,7 @@ family's boat works on a developer's shopping list, and takes the city back one 
   burns and explodes. Pull drivers out of moving cars or take one from a parking bay.
 - **Traffic and people.** Cars keep their lane, stop at red lights and brake for whatever is ahead;
   pedestrians stroll the sidewalks, cross at corners, sunbathe, and panic, cower, flee or fight back.
-- **A five-star wanted level.** Witnesses report crimes; cruisers pursue and ram, officers get out and
+- **A five-star wanted level.** Witnesses report crimes; cruisers weave through traffic to pursue and ram, officers get out and
   shoot or make the arrest, roadblocks and a helicopter arrive at three stars, tactical trucks at
   four. Break line of sight to cool off, or drive into a Fresh Coat for a respray.
 - **Eight story chapters** with subtitled dialogue: a timed delivery run, a car theft, a tail job, a
