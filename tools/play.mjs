@@ -12,7 +12,10 @@ const base = process.env.GAME_URL || 'http://localhost:8123/';
 const out = args.out || 'tools/out';
 mkdirSync(out, { recursive: true });
 
-const b = await Browser.launch({ gl: args.gl || 'angle', port: Number(args.port || 9333) });
+const b = await Browser.launch({ gl: args.gl || 'angle' });
+// a watchdog, so a scenario that hangs ends itself (and its Chrome) instead of lingering
+const limitMs = Number(args.limit || 105) * 1000;
+setTimeout(() => { console.log(`WATCHDOG: scenario still running after ${limitMs / 1000}s, stopping`); b.close().finally(() => process.exit(2)); }, limitMs).unref();
 const t = {
   args, out, sleep,
   /** Loads the game straight into a new game with the debug API on. */

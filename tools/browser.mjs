@@ -2,7 +2,7 @@
 // game headlessly and to take its screenshots: it launches Chrome, sends real key and mouse input,
 // evaluates expressions in the page, collects console errors and captures the rendered frame.
 import { spawn } from 'node:child_process';
-import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -18,18 +18,30 @@ const KEY_CODES = { Space: 32, Enter: 13, Escape: 27, ShiftLeft: 16, ArrowLeft: 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export class Browser {
-  static async launch({ width = 1280, height = 720, port = 9333, gl = 'angle' } = {}) {
+  static async launch({ width = 1280, height = 720, gl = 'angle' } = {}) {
     const exe = CHROME_PATHS.find((p) => existsSync(p));
     if (!exe) throw new Error('Chrome not found; set CHROME_PATH');
     const profile = mkdtempSync(join(tmpdir(), 'sundown-chrome-'));
+    // Port 0 lets Chrome pick a free port, which it writes to DevToolsActivePort in its profile:
+    // that way this script can only ever attach to the browser it started itself.
     const args = [
-      '--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, `--window-size=${width},${height}`,
+      '--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`, `--window-size=${width},${height}`,
       '--no-first-run', '--no-default-browser-check', '--mute-audio', '--hide-scrollbars', '--autoplay-policy=no-user-gesture-required',
       '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows',
-      ...(gl === 'swiftshader' ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist']),
+      // 'swiftshader' renders WebGL on the CPU and never touches the graphics driver
+      ...(gl === 'swiftshader' ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-gpu', '--disable-gpu-compositing'] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist']),
       'about:blank',
     ];
     const child = spawn(exe, args, { stdio: 'ignore' });
+    // never leave Chrome running behind a script that crashed or was stopped
+    process.on('exit', () => { try { child.kill(); } catch { /* already gone */ } });
+    for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => process.exit(130));
+    let port = 0;
+    for (let i = 0; i < 100 && !port; i++) {
+      await sleep(100);
+      try { port = Number(readFileSync(join(profile, 'DevToolsActivePort'), 'utf8').split('\n')[0]); } catch { /* not written yet */ }
+    }
+    if (!port) { child.kill(); throw new Error('Chrome did not report its debugging port'); }
     const b = new Browser(child, port, width, height);
     await b.connect();
     return b;
@@ -58,6 +70,8 @@ export class Browser {
         const { resolve, reject } = this.pending.get(msg.id);
         this.pending.delete(msg.id);
         if (msg.error) reject(new Error(msg.error.message)); else resolve(msg.result);
+      } else if (msg.method && this.onEvent && this.onEvent(msg.method, msg.params)) {
+        // a scenario's own listener took the event
       } else if (msg.method === 'Runtime.exceptionThrown') {
         const d = msg.params.exceptionDetails;
         this.errors.push((d.exception && d.exception.description) || d.text);
@@ -78,7 +92,11 @@ export class Browser {
   send(method, params = {}) {
     const id = this.nextId++;
     this.ws.send(JSON.stringify({ id, method, params }));
-    return new Promise((resolve, reject) => this.pending.set(id, { resolve, reject }));
+    return new Promise((resolve, reject) => {
+      // a page stuck in a loop never answers: fail the call instead of waiting for ever
+      const timer = setTimeout(() => { this.pending.delete(id); reject(new Error(`no answer to ${method} within 20 s (is the page hung?)`)); }, 20000);
+      this.pending.set(id, { resolve: (v) => { clearTimeout(timer); resolve(v); }, reject: (e) => { clearTimeout(timer); reject(e); } });
+    });
   }
 
   async open(url) {

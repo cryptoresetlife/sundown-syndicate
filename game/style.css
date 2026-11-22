@@ -69,6 +69,9 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1020; fon
 #h-crosshair i:nth-child(3) { width: 0.6em; height: 0.14em; left: -1em; top: -0.07em; }
 #h-crosshair i:nth-child(4) { width: 0.6em; height: 0.14em; left: 0.4em; top: -0.07em; }
 #h-hurt { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse at center, rgba(255, 0, 0, 0) 45%, rgba(200, 0, 0, 0.75) 100%); }
+#h-siren { position: absolute; inset: 0; opacity: 0; transition: opacity 0.12s; }
+#h-siren.red { opacity: 1; background: linear-gradient(90deg, rgba(255, 30, 30, 0.34) 0%, rgba(255, 30, 30, 0) 16%, rgba(40, 90, 255, 0) 84%, rgba(40, 90, 255, 0.22) 100%); }
+#h-siren.blue { opacity: 1; background: linear-gradient(90deg, rgba(40, 90, 255, 0.34) 0%, rgba(40, 90, 255, 0) 16%, rgba(255, 30, 30, 0) 84%, rgba(255, 30, 30, 0.22) 100%); }
 .letterbox { position: absolute; left: 0; right: 0; height: 0; background: #000; transition: height 0.5s; }
 #h-letter-top { top: 0; } #h-letter-bottom { bottom: 0; }
 #hud.cutscene .letterbox { height: 11%; }

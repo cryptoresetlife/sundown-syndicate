@@ -23,6 +23,7 @@ let hintTime = 0, moneyFlash = 0, promptClock = 0, helpTime = 14;
 const TEMPLATE = `
 <div id="h-letter-top" class="letterbox"></div><div id="h-letter-bottom" class="letterbox"></div>
 <div id="h-hurt"></div>
+<div id="h-siren"></div>
 <div id="h-status">
   <div id="h-stars"></div>
   <div id="h-money">$0</div>
@@ -107,6 +108,9 @@ function updateHud(dt) {
     last.starKey = starKey;
     [...el.stars.children].forEach((s, i) => { s.className = i < wanted.stars ? (blink ? 'lit dim' : 'lit') : ''; });
   }
+  // the screen edges pulse red and blue while the police have eyes on the player
+  const sirenKey = wanted.stars > 0 && wanted.seen && !cut ? (Math.floor(game.time * 3) % 2 ? 'red' : 'blue') : '';
+  if (last.sirenKey !== sirenKey) { last.sirenKey = sirenKey; el.siren.className = sirenKey; }
   set('money', formatMoney(game.money));
   if (moneyFlash > 0) { moneyFlash -= dt; el.money.classList.toggle('flash', moneyFlash > 0); }
   const w = WEAPONS[p.current];
@@ -156,7 +160,7 @@ function updateHud(dt) {
     if (game.mode === 'play' && !p.dead) {
       if (arrestProgress() > 0.25) prompt = 'You are being arrested — move!';
       else if (!v) { const near = nearestEnterableVehicle(p); if (near) prompt = '[F]  ' + (near.driver ? 'Hijack the ' : near.ownedByPlayer ? 'Get in the ' : 'Steal the ') + near.type.name; }
-      else if (Math.abs(v.speed) < 1 && game.time < 60) prompt = '[F] exit  ·  [R] radio  ·  [Space] handbrake  ·  [H] horn';
+      else if (Math.abs(v.speed) < 1 && game.stats.playSeconds < 40) prompt = '[F] exit  ·  [R] radio  ·  [Space] handbrake  ·  [H] horn';
     }
     set('prompt', prompt);
     show('prompt', !!prompt);

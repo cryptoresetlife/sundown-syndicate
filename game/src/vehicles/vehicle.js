@@ -9,6 +9,7 @@ import { groundHeight } from '../world/layout.js';
 import { VEHICLE_TYPES, PAINTS, buildVehicleMesh, LIGHTBAR_MATERIALS } from './catalog.js';
 import { spawnSmoke, spawnFire, spawnSparks, spawnExplosion, spawnDust } from '../fx/effects.js';
 import { makeGlowTexture } from '../world/textures.js';
+import { sun } from '../world/sky.js';
 
 export class Vehicle {
   constructor(typeId, x, z, heading = 0, paint = null) {
@@ -151,6 +152,7 @@ export class Vehicle {
     this.roll = damp(this.roll, clamp(yawRate * vf * 0.004, -0.09, 0.09), 6, dt);
     this.updateDamageEffects(dt);
     if (this.lightbar) this.updateLightbar();
+    this.updateNightLights();
     this.syncMesh();
   }
 
@@ -221,6 +223,25 @@ export class Vehicle {
       const e = this.localToWorld(0, -this.type.len * 0.35);
       spawnDust(e.x, 0.2, e.z, 1);
     }
+  }
+
+  /** Headlights and tail lights glow once the sun is down (only for cars that still have a driver). */
+  updateNightLights() {
+    const on = sun.night > 0.4 && !this.destroyed && !!this.driver;
+    if (!on && !this.nightLights) return;
+    if (!this.nightLights) {
+      if (!glowTexture) glowTexture = makeGlowTexture();
+      const hw = this.type.wid / 2 - 0.32, hl = this.type.len / 2;
+      const make = (color, x, z, size) => {
+        const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture, color, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, toneMapped: false }));
+        s.scale.setScalar(size);
+        s.position.set(x, 0.74, z);
+        this.chassis.add(s);
+        return s;
+      };
+      this.nightLights = [make(0xfff2c8, hw, hl + 0.1, 1.9), make(0xfff2c8, -hw, hl + 0.1, 1.9), make(0xff2020, hw, -hl - 0.1, 1.1), make(0xff2020, -hw, -hl - 0.1, 1.1)];
+    }
+    for (const s of this.nightLights) s.visible = on;
   }
 
   /** The red and blue flare sprites over a police lightbar. */
