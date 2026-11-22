@@ -46,8 +46,8 @@ export function makeFacadeTexture(kind, seed = 1) {
   };
   if (kind === 'glass') {
     for (let f = 0; f < floors; f++) for (let b = 0; b < bays; b++) {
-      const shade = rnd.range(0.55, 1);
-      d.fillStyle = `rgb(${Math.round(70 * shade)},${Math.round(150 * shade)},${Math.round(200 * shade)})`;
+      const shade = rnd.range(0.72, 1);
+      d.fillStyle = `rgb(${Math.round(96 * shade)},${Math.round(196 * shade)},${Math.round(238 * shade)})`;
       d.fillRect(b * bw, f * fh, bw, fh);
       const g = d.createLinearGradient(0, f * fh, 0, (f + 1) * fh);
       g.addColorStop(0, 'rgba(255,255,255,0.38)'); g.addColorStop(0.5, 'rgba(255,255,255,0.05)'); g.addColorStop(1, 'rgba(0,20,60,0.25)');

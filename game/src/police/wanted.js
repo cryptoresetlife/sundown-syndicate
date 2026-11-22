@@ -155,6 +155,10 @@ onEvent('vehicleCollision', ({ a, b, impact }) => {
   else if (other.driver && impact > 11) reportCrime('hitrun', mine.pos.x, mine.pos.z);
 });
 
+onEvent('carjack', ({ vehicle }) => {
+  reportCrime(vehicle.type.police ? 'copCarTheft' : 'carjack', vehicle.pos.x, vehicle.pos.z);
+});
+
 onEvent('vehicleDestroyed', ({ vehicle, by }) => {
   if (by === 'player' || by === game.player) reportCrime('wreck', vehicle.pos.x, vehicle.pos.z);
 });

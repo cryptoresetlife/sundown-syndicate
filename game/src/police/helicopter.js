@@ -84,7 +84,8 @@ export function updateHelicopter(dt, wantedHigh) {
   heli.sees = len < 130 && raycastWorld(g.position.x, g.position.y, g.position.z, dx / len, dy / len, dz / len, len) >= len - 0.6;
   heli.beamPivot.lookAt(p.pos.x, p.pos.y, p.pos.z);
   heli.beamPivot.rotateX(-Math.PI / 2);
-  heli.beam.material.opacity = 0.05 + 0.2 * sun.night;
+  heli.beam.visible = sun.night > 0.3; // the searchlight only shows after dark
+  heli.beam.material.opacity = 0.22 * sun.night;
   heli.shotClock -= dt;
   if (wanted.stars >= 4 && heli.sees && heli.shotClock <= 0 && !p.dead) {
     heli.burst = (heli.burst || 0) + 1;

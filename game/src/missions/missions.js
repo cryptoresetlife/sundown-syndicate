@@ -6,6 +6,7 @@ import { formatMoney } from '../core/mathutil.js';
 import { LANDMARKS, BLOCK } from '../world/layout.js';
 import { addMarker, removeMarker, playerInMarker } from '../world/markers.js';
 import { spawnPickup, removePickup } from '../world/pickups.js';
+import { parkingSpots } from '../world/buildings.js';
 import { Vehicle } from '../vehicles/vehicle.js';
 import { RouteDriver } from '../vehicles/driver.js';
 import { Npc } from '../characters/npc.js';
@@ -45,7 +46,7 @@ class MissionContext {
   constructor(def) {
     this.def = def;
     this.vars = {};
-    this.vehicles = []; this.npcs = []; this.markers = []; this.pickups = [];
+    this.vehicles = []; this.npcs = []; this.markers = []; this.pickups = []; this.reserved = [];
   }
   vehicle(typeId, x, z, heading = 0, paint = null) {
     const v = new Vehicle(typeId, x, z, heading, paint);
@@ -76,6 +77,7 @@ class MissionContext {
   fail(reason) { failMission(reason); }
   cleanup() {
     for (const m of this.markers) removeMarker(m);
+    for (const spot of this.reserved) spot.reserved = false;
     for (const p of this.pickups) if (game.pickups.includes(p)) removePickup(p);
     for (const v of this.vehicles) { v.keep = false; v.ambient = true; v.locked = false; v.invulnerable = false; if (v.driver && v.driver !== 'player') { v.driver = null; } }
     for (const n of this.npcs) {
@@ -87,6 +89,7 @@ class MissionContext {
   }
   /** Moves parked and ambient cars out of a spot the mission needs. */
   clearArea(x, z, radius) {
+    for (const spot of parkingSpots) if (Math.hypot(spot.x - x, spot.z - z) < radius + 3) { spot.reserved = true; this.reserved.push(spot); }
     for (const v of [...game.vehicles]) {
       if (v.driver === 'player' || v.keep || Math.hypot(v.pos.x - x, v.pos.z - z) > radius) continue;
       if (v.parkedAt) v.parkedAt.vehicle = null;
@@ -210,7 +213,9 @@ export function updateMissions(dt) {
   if (!mission.active) {
     if (game.mode !== 'play' || p.dead) return;
     for (const m of mission.startMarkers) {
-      if (!playerInMarker(m)) { m.inside = false; continue; }
+      // a marker that appears under the player's feet waits until they step out and back in
+      if (!playerInMarker(m)) { m.inside = false; m.armed = true; continue; }
+      if (!m.armed) continue;
       if (m.def.needVehicle ? !p.vehicle : !!p.vehicle) { if (!m.inside) emitEvent('hint', { text: m.def.needVehicle ? 'Come back in a vehicle to start this race' : 'Step out of the vehicle to start the job' }); m.inside = true; continue; }
       if (wanted.stars > 0) { if (!m.inside) emitEvent('hint', { text: 'Lose the cops first' }); m.inside = true; continue; }
       startMission(m.def);

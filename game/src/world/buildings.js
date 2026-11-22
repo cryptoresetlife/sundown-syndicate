@@ -99,13 +99,33 @@ function addRoof(ctx, x0, z0, x1, z1, y, clutter = true) {
   }
 }
 
+const AWNING_COLORS = [0xff3ea5, 0x35c8e8, 0xffd23f, 0xff7a3d, 0x4dd88a, 0xe63946, 0x9b5de5];
+
+/** A striped canvas awning over the shop windows on one face of a building. */
+function addAwning(solid, face, x0, z0, x1, z1, colorA, colorB = 0xffffff) {
+  const along = face === 'n' || face === 's' ? x1 - x0 : z1 - z0;
+  const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+  if (face === 's') solid.at(cx, 0, z1, 0); else if (face === 'n') solid.at(cx, 0, z0, Math.PI);
+  else if (face === 'e') solid.at(x1, 0, cz, Math.PI / 2); else solid.at(x0, 0, cz, -Math.PI / 2);
+  const d = 1.5, yIn = 3.95, yOut = 3.35, w = 1.4;
+  let k = 0;
+  for (let a = -along / 2 + 1; a + w <= along / 2 - 1; a += w, k++) {
+    const c = k % 2 ? colorB : colorA;
+    solid.quad([a, yOut, d], [a + w, yOut, d], [a + w, yIn, 0.05], [a, yIn, 0.05], c);
+    solid.quad([a + w, yOut, d], [a, yOut, d], [a, yIn, 0.05], [a + w, yIn, 0.05], c); // underside
+    solid.quad([a, yOut - 0.3, d], [a + w, yOut - 0.3, d], [a + w, yOut, d], [a, yOut, d], c);
+  }
+  solid.at(0, 0, 0, 0);
+}
+
 /** One plain building: optional shop floor, facade above, roof, sign, collision box. */
-function raiseBuilding(ctx, x0, z0, x1, z1, height, kind, tint, { shop = false, sign = -1, signFace = 's', signSize = 8 } = {}) {
+function raiseBuilding(ctx, x0, z0, x1, z1, height, kind, tint, { shop = false, sign = -1, signFace = 's', signSize = 8, fronts = null } = {}) {
   const { walls, rnd } = ctx;
   let base = 0;
   if (shop) {
     walls.shopfront.at(0, 0, 0, 0).frustum(x0, x1, z0, z1, 0, x0, x1, z0, z1, 4, tint, tint, { tileW: FACADE_TILE_W, tileH: 4, uOffset: rnd.int(0, 3) * 0.25, top: false });
     base = 4;
+    if (fronts) { const c = rnd.pick(AWNING_COLORS); for (const f of fronts) if (rnd.chance(0.75)) addAwning(ctx.solid, f, x0, z0, x1, z1, c); }
   }
   walls[kind].at(0, 0, 0, 0).frustum(x0, x1, z0, z1, base, x0, x1, z0, z1, height, tint, tint, wallOpts(rnd));
   addRoof(ctx, x0, z0, x1, z1, height);
@@ -185,6 +205,7 @@ function raiseParcel(ctx, district, p, bx, bz, q) {
   const { rnd, solid } = ctx;
   const outerFace = () => rnd.pick([q < 2 ? 'n' : 's', q % 2 === 0 ? 'w' : 'e']); // a side that looks onto a street
   const sign = () => (rnd.chance(0.75) ? rnd.pick(GENERIC_SIGNS) : -1);
+  const fronts = [q < 2 ? 'n' : 's', q % 2 === 0 ? 'w' : 'e']; // the two faces on the street get awnings
   if (district === 'downtown') {
     if (rnd.chance(0.12)) return addParking(ctx, p, q);
     const i = rnd.range(1, 3);
@@ -194,11 +215,11 @@ function raiseParcel(ctx, district, p, bx, bz, q) {
     if (rnd.chance(0.16)) return addParking(ctx, p, q);
     const kind = rnd.pick(['office', 'deco', 'stucco', 'glass']);
     const tint = kind === 'glass' ? rnd.pick(GLASS_TINTS) : kind === 'deco' ? rnd.pick(PASTELS) : rnd.pick(OFFICE_TINTS);
-    return raiseBuilding(ctx, p.x0 + 1, p.z0 + 1, p.x1 - 1, p.z1 - 1, rnd.range(14, 46), kind, tint, { shop: true, sign: sign(), signFace: outerFace() });
+    return raiseBuilding(ctx, p.x0 + 1, p.z0 + 1, p.x1 - 1, p.z1 - 1, rnd.range(14, 46), kind, tint, { shop: true, sign: sign(), signFace: outerFace(), fronts });
   }
   if (district === 'strip') {
     const h = rnd.range(22, 68);
-    raiseBuilding(ctx, p.x0 + 1, p.z0 + 1, p.x1 - 1, p.z1 - 1, h, 'deco', rnd.pick(PASTELS), { shop: true, sign: rnd.pick(GENERIC_SIGNS), signFace: q % 2 === 1 ? 'e' : outerFace(), signSize: 10 });
+    raiseBuilding(ctx, p.x0 + 1, p.z0 + 1, p.x1 - 1, p.z1 - 1, h, 'deco', rnd.pick(PASTELS), { shop: true, sign: rnd.pick(GENERIC_SIGNS), signFace: q % 2 === 1 ? 'e' : outerFace(), signSize: 10, fronts });
     // a rooftop fin in a second pastel, the Strip's signature
     solid.at(0, 0, 0, 0).box((p.x0 + p.x1) / 2, h, (p.z0 + p.z1) / 2, 1.2, rnd.range(4, 9), 14, rnd.pick(PASTELS));
     return;
@@ -208,9 +229,9 @@ function raiseParcel(ctx, district, p, bx, bz, q) {
     const half = rnd.chance(0.5);
     const tintA = rnd.pick(SOUTH_TINTS), tintB = rnd.pick(SOUTH_TINTS);
     if (half) {
-      raiseBuilding(ctx, p.x0 + 0.5, p.z0 + 0.5, p.x0 + 13.5, p.z1 - 0.5, rnd.range(7, 14), 'stucco', tintA, { shop: true, sign: sign(), signFace: q < 2 ? 'n' : 's', signSize: 7 });
-      raiseBuilding(ctx, p.x0 + 14.5, p.z0 + 0.5, p.x1 - 0.5, p.z1 - 0.5, rnd.range(7, 14), rnd.pick(['stucco', 'deco']), tintB, { shop: true, sign: sign(), signFace: q < 2 ? 'n' : 's', signSize: 7 });
-    } else raiseBuilding(ctx, p.x0 + 1, p.z0 + 1, p.x1 - 1, p.z1 - 1, rnd.range(8, 18), 'stucco', tintA, { shop: true, sign: sign(), signFace: outerFace() });
+      raiseBuilding(ctx, p.x0 + 0.5, p.z0 + 0.5, p.x0 + 13.5, p.z1 - 0.5, rnd.range(7, 14), 'stucco', tintA, { shop: true, sign: sign(), signFace: q < 2 ? 'n' : 's', signSize: 7, fronts: [fronts[0]] });
+      raiseBuilding(ctx, p.x0 + 14.5, p.z0 + 0.5, p.x1 - 0.5, p.z1 - 0.5, rnd.range(7, 14), rnd.pick(['stucco', 'deco']), tintB, { shop: true, sign: sign(), signFace: q < 2 ? 'n' : 's', signSize: 7, fronts: [fronts[0]] });
+    } else raiseBuilding(ctx, p.x0 + 1, p.z0 + 1, p.x1 - 1, p.z1 - 1, rnd.range(8, 18), 'stucco', tintA, { shop: true, sign: sign(), signFace: outerFace(), fronts });
     return;
   }
   if (district === 'docks') {

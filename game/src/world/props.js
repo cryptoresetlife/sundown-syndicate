@@ -85,10 +85,10 @@ export function buildProps(scene, rnd) {
   solid.at(0, 0, 0, 0).plane(bx0, -20, bx0 + 7, CITY + 30, 0.12, 0xb98a5a, 2);
   for (let z = -16; z < CITY + 30; z += 6) solid.plane(bx0, z, bx0 + 7, z + 0.12, 0.13, 0x8f6a44);
   const umbrellaColors = [0xff5a5a, 0xffd23f, 0x35c8e8, 0xff8ad0, 0x7be07b, 0xffffff, 0xff8a2b];
-  for (let n = 0; n < 70; n++) {
+  for (let n = 0; n < 230; n++) {
     const x = rnd.range(bx0 + 12, ISLAND.x1 - 40), z = rnd.range(-10, CITY + 20);
     if (z > PIER.z0 - 6 && z < PIER.z1 + 6) continue;
-    if (n % 3 === 0) { addPalmTree(solid, leaves, x, z, rnd); continue; }
+    if (n % 5 === 0) { addPalmTree(solid, leaves, x, z, rnd); continue; }
     const c = rnd.pick(umbrellaColors);
     solid.at(0, 0, 0, 0);
     solid.cylinder(x, 0, z, 0.05, 2.3, 0.05, 4, 0xe8e8e8);

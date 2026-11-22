@@ -63,7 +63,7 @@ function pickSpawnPoint(minDist, maxDist) {
     if (!at) continue;
     const dx = at.x - p.pos.x, dz = at.z - p.pos.z, d = Math.hypot(dx, dz);
     const inView = (dx * cam.forward.x + dz * cam.forward.z) / d > 0.6;
-    if (inView && d < 120 && !game.debug.spawnInView) continue;
+    if (inView && d < 95 && !game.debug.spawnInView) continue;
     let clear = true;
     for (const v of game.vehicles) if (Math.hypot(v.pos.x - at.x, v.pos.z - at.z) < 12) { clear = false; break; }
     if (clear) return at;
@@ -101,7 +101,7 @@ function makeUnit(vehicle, tactical = false) {
 
 /** Sends one more police vehicle after the player; 'bulwark' is the armoured tactical truck. */
 export function spawnPoliceCruiser(typeId = 'cruiser', at = null) {
-  const point = at || pickSpawnPoint(85, 190);
+  const point = at || pickSpawnPoint(65, 165);
   if (!point) return null;
   const v = new Vehicle(typeId, point.x, point.z, point.heading);
   v.vx = Math.sin(point.heading) * 12; v.vz = Math.cos(point.heading) * 12;

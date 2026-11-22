@@ -23,8 +23,8 @@ const welcomeBack = {
   ],
   setup(ctx) {
     const lm = L.tiki;
-    ctx.clearArea(lm.x - 7, lm.z, 6);
-    ctx.vars.van = ctx.vehicle('bodega', lm.x - 7, lm.z, Math.PI / 2, 0xffc23d);
+    ctx.clearArea(lm.x - 8, lm.z, 7);
+    ctx.vars.van = ctx.vehicle('bodega', lm.x - 8, lm.z + 0.5, lm.facing, 0xffc23d);
   },
   failIf: (ctx) => (ctx.vars.van.destroyed ? "Lupe's van was wrecked" : null),
   steps: [

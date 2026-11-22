@@ -104,11 +104,11 @@ function buildBody(type) {
   detail.plane(-hw + 0.1, -hl + 0.2, hw - 0.1, hl - 0.2, base - 0.02, DARK); // underside shadow plate
   const wr = s.armored || s.box ? 0.46 : s.lift ? 0.4 : s.low ? 0.33 : 0.35;
   const wz = hl - (s.van ? 1.0 : Math.min(s.hood * 0.72, 1.05)), wzr = -hl + (s.bed ? 1.25 : s.box ? 1.6 : Math.max(0.85, s.trunk * 0.9 + 0.2));
-  // dark wheel arches
-  for (const side of [-1, 1]) for (const z of [wz, wzr]) detail.box(side * (hw - 0.02), base - 0.02, z, 0.05, wr * 0.9, wr * 2.3, DARK);
+  // dark wheel arches above each tyre; the wheels themselves stand a little proud of the body
+  for (const side of [-1, 1]) for (const z of [wz, wzr]) detail.box(side * (hw - 0.01), wr * 1.55, z, 0.06, 0.1, wr * 2.5, DARK);
   return {
     paint: paint.build(), detail: detail.build(), wheelRadius: wr,
-    wheels: [[-hw + 0.16, wz], [hw - 0.16, wz], [-hw + 0.16, wzr], [hw - 0.16, wzr]],
+    wheels: [[-hw + 0.04, wz], [hw - 0.04, wz], [-hw + 0.04, wzr], [hw - 0.04, wzr]],
     roofY: top + (s.van ? 0 : s.cabin) + 0.08, height: top + (s.van ? 0 : s.cabin),
   };
 }
@@ -127,7 +127,7 @@ export function buildVehicleMesh(typeId, paintColor) {
   const group = new THREE.Group();
   const chassis = new THREE.Group(); // leans and pitches; the wheels stay on the road
   group.add(chassis);
-  const paintMaterial = new THREE.MeshStandardMaterial({ color: paintColor, roughness: 0.28, metalness: 0.45 });
+  const paintMaterial = new THREE.MeshStandardMaterial({ color: paintColor, roughness: 0.32, metalness: 0.12 });
   const paintMesh = new THREE.Mesh(body.paint, paintMaterial);
   const detailMesh = new THREE.Mesh(body.detail, detailMaterial);
   paintMesh.castShadow = true; detailMesh.castShadow = true; paintMesh.receiveShadow = true;

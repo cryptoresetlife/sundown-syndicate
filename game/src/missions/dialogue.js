@@ -21,7 +21,7 @@ function next() {
   let item = dialogue.queue.shift();
   while (item && item.done) { item.done(); item = dialogue.queue.shift(); }
   dialogue.current = item || null;
-  if (item) { dialogue.timer = 1.7 + item.text.length * 0.052; playSound('ui', null, null, 0.4); }
+  if (item) { dialogue.timer = 1.3 + item.text.length * 0.042; playSound('ui', null, null, 0.4); }
 }
 
 export function isTalking() {
