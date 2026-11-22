@@ -30,6 +30,7 @@ export class Browser {
       '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows',
       // 'swiftshader' renders WebGL on the CPU and never touches the graphics driver
       ...(gl === 'swiftshader' ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-gpu', '--disable-gpu-compositing'] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist']),
+      ...(process.env.CHROME_FLAGS ? process.env.CHROME_FLAGS.split(' ') : []), // extra switches for a troublesome machine
       'about:blank',
     ];
     const child = spawn(exe, args, { stdio: 'ignore' });
