@@ -135,16 +135,16 @@ export function addCameraShake(amount) {
 
 /** A fireball, smoke column, sparks, a flash of light and a shake that fades with distance. */
 export function spawnExplosion(x, y, z, scale = 1) {
-  for (let i = 0; i < 26; i++) {
+  for (let i = 0; i < 16; i++) {
     const a = Math.random() * 6.28, s = Math.random() * 7 * scale;
-    spawnParticle('fire', x, y + 0.6, z, Math.cos(a) * s, 2 + Math.random() * 7, Math.sin(a) * s, 0.5 + Math.random() * 0.5, 2.6 * scale, 5.5 * scale, 1, 0.55 + Math.random() * 0.3, 0.12, 1);
+    spawnParticle('fire', x, y + 0.6, z, Math.cos(a) * s, 2 + Math.random() * 7, Math.sin(a) * s, 0.45 + Math.random() * 0.5, 1.5 * scale, 3.6 * scale, 1, 0.42 + Math.random() * 0.25, 0.06, 0.55);
   }
   for (let i = 0; i < 18; i++) {
     const a = Math.random() * 6.28, s = Math.random() * 4 * scale;
     spawnParticle('smoke', x, y + 1, z, Math.cos(a) * s, 3 + Math.random() * 4, Math.sin(a) * s, 2.2 + Math.random() * 1.5, 2.5 * scale, 8 * scale, 0.12, 0.11, 0.1, 0.8);
   }
   spawnSparks(x, y + 1, z, 30);
-  flashLight(x, y + 3, z, 0xff9040, 900, 0.5);
+  flashLight(x, y + 3, z, 0xff9040, 220, 0.45);
   const d = game.camera ? game.camera.position.distanceTo(new THREE.Vector3(x, y, z)) : 50;
   addCameraShake(Math.max(0, 1.3 - d / 60));
   emitEvent('explosion', { x, y, z, scale });

@@ -36,7 +36,7 @@ export function addMarker(opts) {
   if (m.label && !m.mapOnly) {
     if (!labelTextures.has(m.label)) labelTextures.set(m.label, makeTextTexture(m.label, { size: 92 }));
     m.sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTextures.get(m.label), color: m.color, depthTest: false, transparent: true, toneMapped: false }));
-    m.sprite.scale.setScalar(2.2);
+    m.sprite.scale.setScalar(m.follow ? 1.3 : 2.2);
     m.sprite.position.y = m.follow ? 4.2 : 3.4;
     m.sprite.renderOrder = 20;
     m.group.add(m.sprite);

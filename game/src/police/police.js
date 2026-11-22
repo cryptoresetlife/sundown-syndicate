@@ -205,8 +205,9 @@ export function updatePolice(dt) {
     dispatchClock -= dt;
     if (dispatchClock <= 0) {
       dispatchClock = 2.2;
-      if (cruisers < CRUISERS[wanted.stars]) spawnPoliceCruiser('cruiser');
-      else if (trucks < TRUCKS[wanted.stars]) spawnPoliceCruiser('bulwark');
+      const room = units.length < 3 + wanted.stars * 2; // parked and deployed units count against the total
+      if (room && cruisers < CRUISERS[wanted.stars]) spawnPoliceCruiser('cruiser');
+      else if (room && trucks < TRUCKS[wanted.stars]) spawnPoliceCruiser('bulwark');
     }
     roadblockClock -= dt;
     if (wanted.stars >= 3 && roadblockClock <= 0) roadblockClock = spawnRoadblock() ? 26 : 4;

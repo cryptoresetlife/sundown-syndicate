@@ -8,11 +8,19 @@ import { spawnPoliceCruiser, spawnRoadblock } from '../police/police.js';
 import { enterVehicle } from '../vehicles/carjack.js';
 import { startMission, storyMissions, mission, refreshStartMarkers } from '../missions/missions.js';
 import { WEAPONS } from '../combat/weapons.js';
+import { markers } from '../world/markers.js';
+import { taxi } from '../missions/activities.js';
+import { placeShopMarkers } from '../economy/shops.js';
 
 export function installDebugTools({ startNewGame, Vehicle }) {
   const params = new URLSearchParams(window.location.search);
   const api = {
-    game, cam, mission,
+    game, cam, mission, markers, taxi,
+    /** Puts the player back on foot without the exit animation or the speed check. */
+    onFoot() {
+      const p = game.player;
+      if (p.vehicle) { p.vehicle.driver = null; p.vehicle = null; p.body.root.visible = true; }
+    },
     /** Moves the player (and the car they are driving) to a spot. */
     warp(x, z, heading = 0) {
       const p = game.player, v = p.vehicle;
@@ -43,6 +51,8 @@ export function installDebugTools({ startNewGame, Vehicle }) {
       return startMission(storyMissions()[n - 1], skipIntro);
     },
     god(on = true) { game.debug.godMode = on; },
+    /** Pretends the first n chapters are done and re-places the markers that unlocks. */
+    progress(n) { game.storyIndex = n; refreshStartMarkers(); placeShopMarkers(); },
   };
   if (params.has('debug') || params.has('autostart')) window.sundown = api;
   if (params.has('autostart')) startNewGameSoon(startNewGame, params);

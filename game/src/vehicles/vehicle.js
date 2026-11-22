@@ -128,7 +128,7 @@ export class Vehicle {
 
     if (throttle > 0) {
       if (vf < -0.5) vf += 22 * dt; // braking out of reverse
-      else vf += t.accel * throttle * healthFactor * Math.max(0, 1 - Math.pow(Math.max(vf, 0) / t.topSpeed, 2.2)) * dt;
+      else vf += t.accel * 0.82 * throttle * healthFactor * Math.max(0, 1 - Math.pow(Math.max(vf, 0) / (t.topSpeed * 0.9), 2.2)) * dt;
     } else if (throttle < 0) {
       if (vf > 0.6) vf -= 24 * -throttle * dt; // brakes
       else vf += t.accel * 0.7 * throttle * Math.max(0, 1 - Math.abs(vf) / (t.topSpeed * 0.32)) * dt;
@@ -201,8 +201,8 @@ export class Vehicle {
       const side = nx * -Math.cos(this.heading) + nz * Math.sin(this.heading);
       this.heading -= clamp(side * Math.sign(offset) * impact * 0.012, -0.12, 0.12);
     }
-    if (impact > 4 && !soft) {
-      this.damage((impact - 4) * 2.2);
+    if (impact > 5 && !soft) {
+      this.damage((impact - 5) * 1.15);
       spawnSparks(this.pos.x - nx * 1.5, 0.6, this.pos.z - nz * 1.5, 6);
       emitEvent('crash', { vehicle: this, impact });
     }
@@ -300,7 +300,7 @@ export function collideVehicles(dt) {
       b.vx += (jImp / mb) * bnx; b.vz += (jImp / mb) * bnz;
       const impact = -rel;
       if (impact > 3) {
-        const dmg = (impact - 3) * 1.6;
+        const dmg = (impact - 3) * 0.9;
         a.damage(dmg * (mb / total) * 2, b.driver); b.damage(dmg * (ma / total) * 2, a.driver);
         spawnSparks((a.pos.x + b.pos.x) / 2, 0.7, (a.pos.z + b.pos.z) / 2, 8);
         emitEvent('vehicleCollision', { a, b, impact });
